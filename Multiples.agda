@@ -22,4 +22,16 @@ getBound n (suc k) = just (k * n)
 
 private  
  module ≤O = DecTotalOrder Data.Nat.Properties.≤-decTotalOrder  
- module <O = StrictTotalOrder Data.Nat.Properties.strictTotalOrder  
+ module <O = StrictTotalOrder Data.Nat.Properties.strictTotalOrder
+
+abstract  
+ multiples' : ∀ n (k : ℕ) → n > 0 → SortedStream _<_ (λ x → n ∣ x) (getBound n k)  
+ multiples' n k n>0 = (minimum (k * n) (divides k PropEq.refl , good) (minimal k)) ∷ ♯ multiples' n (suc k) n>0 where  
+
+  +-lem-inv : ∀ {n a b} → a ≤ b → n + a ≤ n + b  
+  +-lem-inv {zero} le = le  
+  +-lem-inv {suc n} le = s≤s (+-lem-inv {n} le)  
+
+  +-lem : ∀ {n a b} → n + a ≤ n + b → a ≤ b  
+  +-lem {zero} le = le  
+  +-lem {suc n'} (s≤s m≤n) = +-lem {n'} m≤n  
