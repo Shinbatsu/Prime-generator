@@ -34,4 +34,15 @@ abstract
 
   +-lem : ∀ {n a b} → n + a ≤ n + b → a ≤ b  
   +-lem {zero} le = le  
-  +-lem {suc n'} (s≤s m≤n) = +-lem {n'} m≤n  
+  +-lem {suc n'} (s≤s m≤n) = +-lem {n'} m≤n
+
+  *-lem-inv : ∀ {n a b} → n > 0 → a ≥ b → a * n ≥ b * n  
+  *-lem-inv n>1 z≤n = z≤n  
+  *-lem-inv {n} n>1 (s≤s m≤n) = +-lem-inv {n} (*-lem-inv n>1 m≤n)  
+
+  ≥⇒≯ : ∀ {a b} → a ≥ b → ¬ b > a  
+  ≥⇒≯ z≤n ()  
+  ≥⇒≯ (s≤s m≤n) (s≤s m≤n') = ≥⇒≯ m≤n m≤n'  
+
+  *-lem : ∀ {a b n} → n > 0 → a * n < b * n → a < b  
+  *-lem n>0 lss = ≰⇒> (λ le → ≥⇒≯ (*-lem-inv n>0 le) lss)  
