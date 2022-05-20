@@ -54,3 +54,20 @@ abstract
   good' _ _ _ | zero = record {}
   good' _ n n>0 | suc k-1 with n | n>0
   good' _ _ _ | suc k-1 | .(suc n') | s≤s {.0} {n'} m≤n = s≤s (n≤m+n n' (k-1 * suc n'))
+
+
+  import MRel  
+  open MRel _<_  
+  good' : ∀ k n → n > 0 → getBound n k m< (just (k * n))  
+  good' k _ _ with k  
+  good' _ _ _ | zero = record {}  
+  good' _ n n>0 | suc k-1 with n | n>0  
+  good' _ _ _ | suc k-1 | .(suc n') | s≤s {.0} {n'} m≤n = s≤s (n≤m+n n' (k-1 * suc n'))  
+
+  good = good' k n n>0  
+
+  minimal : ∀ {y} → ∀ k → n ∣ y ×  getBound n k m< just y → ¬ y < k * n  
+  minimal k (n∣y , nk<y) y<kn with k  
+  minimal _ (n∣y , nk<y) () | zero  
+  minimal _ (divides q PropEq.refl , nk<y) y<kn | suc k with *-lem {k} {q} {n}  n>0 nk<y  
+  ... | zzz = ≥⇒≯ (zzz *-mono ≤O.reflexive (PropEq.refl {x = n})) y<kn  
