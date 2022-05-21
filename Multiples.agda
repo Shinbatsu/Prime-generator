@@ -1,5 +1,13 @@
 module Multiples where
 
+open import Data.Nat
+open import Data.Product
+open import Data.Maybe
+
+getBound : ℕ → ℕ → Maybe ℕ
+getBound _ zero = nothing
+getBound n (suc k) = just (k * n)
+
 open import Data.Nat.Properties
 open import Data.Nat.Divisibility
 
@@ -11,14 +19,6 @@ open import Relation.Nullary
 import Relation.Binary.PropositionalEquality as PropEq
 open import Relation.Binary
 open import Coinduction
-
-open import Data.Nat
-open import Data.Product
-open import Data.Maybe
-
-getBound : ℕ → ℕ → Maybe ℕ
-getBound _ zero = nothing
-getBound n (suc k) = just (k * n)
 
 private
  module ≤O = DecTotalOrder Data.Nat.Properties.≤-decTotalOrder
@@ -55,19 +55,15 @@ abstract
   good' _ n n>0 | suc k-1 with n | n>0
   good' _ _ _ | suc k-1 | .(suc n') | s≤s {.0} {n'} m≤n = s≤s (n≤m+n n' (k-1 * suc n'))
 
+  good = good' k n n>0
 
-  import MRel  
-  open MRel _<_  
-  good' : ∀ k n → n > 0 → getBound n k m< (just (k * n))  
-  good' k _ _ with k  
-  good' _ _ _ | zero = record {}  
-  good' _ n n>0 | suc k-1 with n | n>0  
-  good' _ _ _ | suc k-1 | .(suc n') | s≤s {.0} {n'} m≤n = s≤s (n≤m+n n' (k-1 * suc n'))  
+  minimal : ∀ {y} → ∀ k → n ∣ y ×  getBound n k m< just y → ¬ y < k * n
+  minimal k (n∣y , nk<y) y<kn with k
+  minimal _ (n∣y , nk<y) () | zero
+  minimal _ (divides q PropEq.refl , nk<y) y<kn | suc k with *-lem {k} {q} {n}  n>0 nk<y
+  ... | zzz = ≥⇒≯ (zzz *-mono ≤O.reflexive (PropEq.refl {x = n})) y<kn
 
-  good = good' k n n>0  
+abstract
+ multiples : ∀ n → n > 0 → SortedStream _<_ (λ x → n ∣ x) nothing
+ multiples n n>0 = multiples' n 0 n>0
 
-  minimal : ∀ {y} → ∀ k → n ∣ y ×  getBound n k m< just y → ¬ y < k * n  
-  minimal k (n∣y , nk<y) y<kn with k  
-  minimal _ (n∣y , nk<y) () | zero  
-  minimal _ (divides q PropEq.refl , nk<y) y<kn | suc k with *-lem {k} {q} {n}  n>0 nk<y  
-  ... | zzz = ≥⇒≯ (zzz *-mono ≤O.reflexive (PropEq.refl {x = n})) y<kn  
