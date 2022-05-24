@@ -30,3 +30,15 @@ theorem {l = x ∷ t} (here refl) = divides (product t) (solve 2 (λ a b → a :
 theorem {l = x ∷ t} (there pxs) with theorem pxs
 theorem {l = x ∷ t} (there pxs) | th = Poset.trans Div.poset th (divides x refl)
 theorem {l = []} ()
+
+module Membership = Data.List.Membership.Setoid
+
+anyMap : ∀ {A B : Set} → (f : A → B) → {P₁ : A → Set} → {P₂ : B → Set} → (f-preserves : ∀ {x} → P₁ x → P₂ (f x))
+  → ∀ {l} → Any P₁ l → Any P₂ (Data.List.map f  l)
+anyMap f pres (here px) = here (pres px)
+anyMap f pres (there pxs) = there (anyMap f pres pxs)
+
+allMap : ∀ {A B : Set} → (f : A → B) → {P₁ : A → Set} → {P₂ : B → Set} → (f-preserves : ∀ {x} → P₁ x → P₂ (f x))
+  → ∀ {l} → All P₁ l → All P₂ (Data.List.map f  l)
+allMap f pres [] = []
+allMap f pres (px ∷ pxs) = pres px ∷ allMap f pres pxs
