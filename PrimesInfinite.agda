@@ -52,3 +52,7 @@ allMap f pres (px ∷ pxs) = pres px ∷ allMap f pres pxs
   M₁._∈_ x l
   → M₂._∈_ (f x) (Data.List.map f l)
 ∈Map f {l} {x} inn = anyMap f (PropEq.cong f) inn
+
+procuct-preserves-≥1 : ∀ {l} → All (λ q → q ≥ 1) l → (λ q → q ≥ 1) (product l)
+procuct-preserves-≥1 [] = s≤s z≤n
+procuct-preserves-≥1 (px ∷ pxs) = px *-mono procuct-preserves-≥1 pxs
