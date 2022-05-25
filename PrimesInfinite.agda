@@ -42,3 +42,13 @@ allMap : ∀ {A B : Set} → (f : A → B) → {P₁ : A → Set} → {P₂ : B 
   → ∀ {l} → All P₁ l → All P₂ (Data.List.map f  l)
 allMap f pres [] = []
 allMap f pres (px ∷ pxs) = pres px ∷ allMap f pres pxs
+
+
+∈Map : ∀ {A B : Set} →  (f : A → B) → ∀ {l} →
+  let 
+    module M₁ = Membership (PropEq.setoid A)
+    module M₂ = Membership (PropEq.setoid B) in
+  ∀ {x} →
+  M₁._∈_ x l
+  → M₂._∈_ (f x) (Data.List.map f l)
+∈Map f {l} {x} inn = anyMap f (PropEq.cong f) inn
