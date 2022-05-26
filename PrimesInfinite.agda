@@ -64,7 +64,7 @@ infinite n = m , m>n , correct where
 
   rawPrimes = Data.List.map proj₁ (proj₁ prms)
   pprod = product rawPrimes
-  
+
   open import Data.Unit using (⊤; tt)
   open import Data.Empty
 
@@ -83,3 +83,22 @@ infinite n = m , m>n , correct where
 
   pprod≥1 : pprod ≥ 1
   pprod≥1 = procuct-preserves-≥1 all≥1
+
+  megaprod = n * pprod
+
+  m = 1 + megaprod
+
+  megaprod≥n : n ≤ megaprod
+  megaprod≥n = let open ≤-Reasoning in 
+   begin 
+    n
+      ≡⟨ +-comm 0 n ⟩ 
+    n + 0
+      ≡⟨ *-comm 1 n ⟩ 
+    n * 1 
+      ≤⟨ (( begin n ≡⟨ refl ⟩ n ∎) *-mono pprod≥1) ⟩
+    n * pprod 
+   ∎
+
+  m>n : n < m
+  m>n = s≤s megaprod≥n
