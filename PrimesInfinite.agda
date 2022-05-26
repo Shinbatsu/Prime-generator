@@ -102,3 +102,12 @@ infinite n = m , m>n , correct where
 
   m>n : n < m
   m>n = s≤s megaprod≥n
+
+
+  ¬∣+1 : ∀ {x m} → x > 1 → x ∣ m → ¬ x ∣ (1 + m)
+  ¬∣+1 {x} {m} >1 divs₁ divs₂ with ∣1⇒≡1 x∣1 where
+   x∣1 : x ∣ 1
+   x∣1 = ∣-∸ (PropEq.subst (_∣_ x) (+-comm 1 m) divs₂) divs₁
+  ¬∣+1 (s≤s ()) divs₁ divs₂ | PropEq.refl
+
+  
