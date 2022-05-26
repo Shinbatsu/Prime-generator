@@ -110,4 +110,16 @@ infinite n = m , m>n , correct where
    x∣1 = ∣-∸ (PropEq.subst (_∣_ x) (+-comm 1 m) divs₂) divs₁
   ¬∣+1 (s≤s ()) divs₁ divs₂ | PropEq.refl
 
-  
+  correct : (∀ x → x ≤ n → IsPrime x → ¬ x ∣ m)
+  correct x x≤pv px = ¬∣+1 (prime≥2 xprime) x∣megaprod where
+
+   xprime : Prime
+   xprime = x , px
+
+   open Membership (PropEq.setoid ℕ)
+   x∈rawPrimes : x ∈ rawPrimes
+   x∈rawPrimes = anyMap proj₁ (λ x0 → x0) (proj₂ prms xprime (s≤s x≤pv))
+
+   open import DividesProduct
+   x∣megaprod : x ∣ megaprod
+   x∣megaprod = Poset.trans poset (theorem x∈rawPrimes) (divides n PropEq.refl)
