@@ -56,3 +56,11 @@ allMap f pres (px ∷ pxs) = pres px ∷ allMap f pres pxs
 procuct-preserves-≥1 : ∀ {l} → All (λ q → q ≥ 1) l → (λ q → q ≥ 1) (product l)
 procuct-preserves-≥1 [] = s≤s z≤n
 procuct-preserves-≥1 (px ∷ pxs) = px *-mono procuct-preserves-≥1 pxs
+
+infinite : ∀ n → ∃ (λ m → n < m × (∀ x → x ≤ n → IsPrime x → ¬ x ∣ m))
+infinite n = m , m>n , correct where
+  open import Data.List
+  prms = primesTo (suc n)
+
+  rawPrimes = Data.List.map proj₁ (proj₁ prms)
+  pprod = product rawPrimes
