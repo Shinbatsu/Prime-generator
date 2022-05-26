@@ -64,3 +64,22 @@ infinite n = m , m>n , correct where
 
   rawPrimes = Data.List.map proj₁ (proj₁ prms)
   pprod = product rawPrimes
+  
+  open import Data.Unit using (⊤; tt)
+  open import Data.Empty
+
+  alltt : ∀ {A : Set} (l : List A) → All (λ _ → ⊤) l
+  alltt [] = []
+  alltt (x ∷ xs) = tt ∷ alltt xs
+
+  allPrimes : All (λ _ → ⊤) (proj₁ prms)
+  allPrimes = alltt (proj₁ prms)
+
+  all≥1 : All (λ q → q ≥ 1) rawPrimes
+  all≥1 = allMap proj₁ (λ {x} → gg {x}) allPrimes where
+   gg : {x : Prime} → ⊤ → proj₁ x ≥ 1
+   gg {ℕ.zero , isPr} tt = ⊥-elim (zero-nonprime isPr)
+   gg {suc n' , isPr} tt = s≤s z≤n
+
+  pprod≥1 : pprod ≥ 1
+  pprod≥1 = procuct-preserves-≥1 all≥1
