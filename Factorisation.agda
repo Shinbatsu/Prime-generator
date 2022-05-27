@@ -30,3 +30,16 @@ open import Induction.Nat
 
 Prime : Set
 Prime = Σ ℕ IsPrime
+
+suc-inj : ∀ {x y} → suc x ≡ suc y → x ≡ y
+suc-inj refl = refl
+
++inj : ∀ a x y → a + x ≡ a + y → x ≡ y
++inj zero x .x refl = refl
++inj (suc a) x y qq = +inj a x y (suc-inj qq)
+
+composite-¬prime : ∀ n → Composite n → IsPrime n → ⊥
+composite-¬prime .((2 + a) * (2 + b)) (composite a b) (not1 , pr) with pr (2 + b) (divides (2 + a) refl)
+composite-¬prime ._ (composite a b) (not1 , pr) | inj₁ x with +inj (2 + b) 0 ((1 + a) * (2 + b)) (trans (+-comm (2 + b) 0) x)
+... | ()
+composite-¬prime ._ (composite a b) (not1 , pr) | inj₂ ()
