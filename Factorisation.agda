@@ -31,6 +31,12 @@ open import Induction.Nat
 Prime : Set
 Prime = Σ ℕ IsPrime
 
+import Data.List.Membership.Setoid
+open Data.List.Membership.Setoid (setoid Prime)
+
+data Composite : ℕ → Set where
+  composite : ∀ a b → Composite ((2 + a) * (2 + b))
+
 suc-inj : ∀ {x y} → suc x ≡ suc y → x ≡ y
 suc-inj refl = refl
 
@@ -44,7 +50,6 @@ composite-¬prime ._ (composite a b) (not1 , pr) | inj₁ x with +inj (2 + b) 0 
 ... | ()
 composite-¬prime ._ (composite a b) (not1 , pr) | inj₂ ()
 
-
 data Facts : ℕ → Set where
   zero : Facts 0
   one : Facts 1
@@ -57,6 +62,7 @@ qwe : ∀ a b c → a + b ≤ c → a ≤ c
 qwe zero b c leq = z≤n
 qwe (suc n) b zero ()
 qwe (suc n) b (suc n') (s≤s m≤n) = s≤s (qwe n b n' m≤n)
+
 
 Primes-Good-To : ℕ → List Prime → Set
 Primes-Good-To top primes = ∀ (p : Prime) → proj₁ p < top → Any ((_≡_ (proj₁ p) ∘ proj₁)) primes
@@ -101,7 +107,6 @@ factor .0 | primes , primes-good | no ¬p | inj₁ z≤n = zero
 factor .1 | primes , primes-good | no ¬p | inj₁ (s≤s z≤n) = one
 ... | inj₂ ispr = subst Facts (+-comm n 0) (fact (n , ispr) 0)
 
-
 open import Function.Inverse
 open import Function.Equality
 
@@ -136,3 +141,62 @@ prime≥2' (suc (suc n) , proj₂) = n , refl
 prime≥2 : ∀ (p : Prime) → proj₁ p ≥ 2
 prime≥2 p with prime≥2' p
 prime≥2 (.(suc (suc proj₁)) , pp) | proj₁ , refl = s≤s (s≤s z≤n)
+
+{- primality : (n : ℕ) → Irr (IsPrime n) ⊎ Composite n ⊎ n < 2
+primality n = {!!} -}
+
+prime? : (n : ℕ) → Dec (IsPrime n)
+prime? n with factor n
+prime? .0 | zero = no  zero-nonprime
+prime? .1 | one = no  one-nonprime
+prime? .(p + 0) | fact (p , p-good) 0 with p + 0 | +-comm p 0
+prime? ._ | fact (p , p-good) zero | .p | refl = yes p-good
+prime? .((suc (suc m)) * proj₁ p) | fact p (suc m) with prime≥2' p
+prime? .((2 + m) * (2 + p-2)) | fact (.(suc (suc p-2)) , prm) (suc m) | p-2 , refl = no (composite-¬prime ((2 + m) * (2 + p-2)) (composite m p-2))
+
+primesTo zero = [] , λ { p () }
+primesTo (suc n) = extend n (primesTo n) (prime? n)
+
+open import Data.Maybe
+open import Data.Unit using (⊤)
+
+import Data.Nat.Properties
+open import Relation.Binary
+
+prime⇒prime' : ∀ {n} → IsPrime n → IsPrime' n
+prime⇒prime' {zero} z-prime = ⊥-elim (zero-nonprime z-prime)
+prime⇒prime' {suc zero} o-prime = ⊥-elim (one-nonprime o-prime)
+prime⇒prime' {suc (suc n)} (_ , isPrime) = s≤s (s≤s z≤n) , gg where
+  gg : ∀ m → (m < (2 + n)) → IsPrime m → ¬ m ∣ (2 + n)
+  gg m m<n m-prime divs with isPrime m divs
+  gg m m<n m-prime divs | inj₁ m≡n = StrictTotalOrder.irrefl strictTotalOrder m≡n m<n
+  gg m m<n (m≢1 , m-prime) divs | inj₂ m≡1 = m≢1 m≡1
+
+
+∣⇒≤' : ∀ {m n} → n ≢ 0 → m ∣ n → m ≤ n
+∣⇒≤' {m} {zero} nz divs = ⊥-elim (nz refl)
+∣⇒≤' {m} {suc n} gtt divs = ∣⇒≤ divs
+
+private 
+ module ≤O = DecTotalOrder Data.Nat.Properties.≤-decTotalOrder
+ module <O = StrictTotalOrder strictTotalOrder
+
+prime'⇒prime : ∀ {n} → IsPrime' n → IsPrime n
+prime'⇒prime {zero} (() , _)
+prime'⇒prime {suc zero} (s≤s () , _)
+prime'⇒prime {suc (suc n)} (_ , pr) = (λ { () }) , gg where
+  gg : IsPrime1 (suc (suc n))
+  gg m m∣n with <O.compare m (suc (suc n))
+  gg m m∣n | tri< a ¬b ¬c with factor m
+  gg .0 m∣n | tri< a ¬b ¬c | zero = inj₁ (PropEq.sym (0∣⇒≡0 m∣n))
+  gg .1 m∣n | tri< a ¬b ¬c | one = inj₂ PropEq.refl
+  gg .((1 + q) * p) m∣n | tri< m<n ¬b ¬c | fact (p , p-prime) q = ⊥-elim (pr p (≤O.trans (s≤s (∣⇒≤' {p} {(1 + q) * p} (damn m∣n) (divides (1 + q) refl))) m<n ) p-prime (∣-trans (divides (1 + q) PropEq.refl) m∣n)) where
+    damn : (p + q * p ∣ suc (suc n)) → (1 + q) * p ≢ 0
+    damn m∣n zz with (1 + q) * p | m∣n
+    damn m∣n _ | zero | m∣n' with 0∣⇒≡0 m∣n'
+    ... | ()
+    damn m∣n () | suc n' | m∣n'
+  gg m m∣n | tri≈ ¬a b ¬c = inj₁ b
+  gg m m∣n | tri> ¬a ¬b c with ∣⇒≤ m∣n
+  ... | qqq =  ⊥-elim (<O.irrefl refl (≤O.trans c qqq)) 
+
