@@ -100,3 +100,39 @@ factor n | (primes , primes-good) | no ¬p with found-prime n primes ¬p primes-
 factor .0 | primes , primes-good | no ¬p | inj₁ z≤n = zero
 factor .1 | primes , primes-good | no ¬p | inj₁ (s≤s z≤n) = one
 ... | inj₂ ispr = subst Facts (+-comm n 0) (fact (n , ispr) 0)
+
+
+open import Function.Inverse
+open import Function.Equality
+
+extend : ∀ n → (PrimesTo n) → Dec (IsPrime n) → PrimesTo (suc n)
+extend n (primes , good) dec = new dec ++ primes , gnl dec where
+
+  new : Dec (IsPrime n) → List Prime
+  new dec with dec
+  ... | yes p = (n , p) ∷ []
+  ... | no ¬p = []
+
+  gnl : (dec : Dec (IsPrime n)) → Primes-Good-To (suc n) (new dec ++ primes)
+  gnl dec p lss with ≤⇒≤′ lss
+  gnl dec (._ , _) lss | ≤′-refl with dec
+  gnl _ (.n , prf) lss | ≤′-refl | yes pp = here refl
+  gnl _ (.n , prf) lss | ≤′-refl | no ¬p = ⊥-elim (¬p prf)
+  gnl dec p lss | ≤′-step m≤′n = Inverse.to (++↔ {xs = new dec} {ys = primes}) ⟨$⟩ (inj₂ (good p (≤′⇒≤ m≤′n)))
+
+zero-nonprime : ¬ IsPrime 0
+zero-nonprime (_ , prm) with prm 2 (divides 0 refl)
+zero-nonprime (_ , _) | inj₁ ()
+zero-nonprime (_ , _) | inj₂ ()
+
+one-nonprime : ¬ IsPrime 1
+one-nonprime (neq , _) = ⊥-elim (neq refl)
+
+prime≥2' : ∀ (p : Prime) → ∃ (λ p-2 → proj₁ p ≡ 2 + p-2)
+prime≥2' (zero , proj₂) = ⊥-elim (zero-nonprime proj₂)
+prime≥2' (suc zero , proj₂) = ⊥-elim (one-nonprime proj₂)
+prime≥2' (suc (suc n) , proj₂) = n , refl
+
+prime≥2 : ∀ (p : Prime) → proj₁ p ≥ 2
+prime≥2 p with prime≥2' p
+prime≥2 (.(suc (suc proj₁)) , pp) | proj₁ , refl = s≤s (s≤s z≤n)
