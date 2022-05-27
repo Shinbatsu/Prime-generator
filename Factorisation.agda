@@ -58,3 +58,10 @@ qwe zero b c leq = z≤n
 qwe (suc n) b zero ()
 qwe (suc n) b (suc n') (s≤s m≤n) = s≤s (qwe n b n' m≤n)
 
+
+Primes-Good-To : ℕ → List Prime → Set
+Primes-Good-To top primes = ∀ (p : Prime) → proj₁ p < top → Any ((_≡_ (proj₁ p) ∘ proj₁)) primes
+
+PrimesTo : ℕ → Set
+PrimesTo top = Σ (List Prime) (Primes-Good-To top)
+
