@@ -43,3 +43,18 @@ composite-¬prime .((2 + a) * (2 + b)) (composite a b) (not1 , pr) with pr (2 + 
 composite-¬prime ._ (composite a b) (not1 , pr) | inj₁ x with +inj (2 + b) 0 ((1 + a) * (2 + b)) (trans (+-comm (2 + b) 0) x)
 ... | ()
 composite-¬prime ._ (composite a b) (not1 , pr) | inj₂ ()
+
+
+data Facts : ℕ → Set where
+  zero : Facts 0
+  one : Facts 1
+  fact : ∀ (p : Prime) m → Facts ((suc m) * proj₁ p)
+
+*-∣-inj : ∀ m n q → q * m ∣ n → m ∣ n
+*-∣-inj m .(q' * (q * m)) q (divides q' refl) = divides (q' * q) (sym (*-assoc q' q m))
+
+qwe : ∀ a b c → a + b ≤ c → a ≤ c
+qwe zero b c leq = z≤n
+qwe (suc n) b zero ()
+qwe (suc n) b (suc n') (s≤s m≤n) = s≤s (qwe n b n' m≤n)
+
