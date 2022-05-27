@@ -43,9 +43,8 @@ allMap : ∀ {A B : Set} → (f : A → B) → {P₁ : A → Set} → {P₂ : B 
 allMap f pres [] = []
 allMap f pres (px ∷ pxs) = pres px ∷ allMap f pres pxs
 
-
 ∈Map : ∀ {A B : Set} →  (f : A → B) → ∀ {l} →
-  let 
+  let
     module M₁ = Membership (PropEq.setoid A)
     module M₂ = Membership (PropEq.setoid B) in
   ∀ {x} →
@@ -89,20 +88,19 @@ infinite n = m , m>n , correct where
   m = 1 + megaprod
 
   megaprod≥n : n ≤ megaprod
-  megaprod≥n = let open ≤-Reasoning in 
-   begin 
+  megaprod≥n = let open ≤-Reasoning in
+   begin
     n
-      ≡⟨ +-comm 0 n ⟩ 
+      ≡⟨ +-comm 0 n ⟩
     n + 0
-      ≡⟨ *-comm 1 n ⟩ 
-    n * 1 
+      ≡⟨ *-comm 1 n ⟩
+    n * 1
       ≤⟨ (( begin n ≡⟨ refl ⟩ n ∎) *-mono pprod≥1) ⟩
-    n * pprod 
+    n * pprod
    ∎
 
   m>n : n < m
   m>n = s≤s megaprod≥n
-
 
   ¬∣+1 : ∀ {x m} → x > 1 → x ∣ m → ¬ x ∣ (1 + m)
   ¬∣+1 {x} {m} >1 divs₁ divs₂ with ∣1⇒≡1 x∣1 where
@@ -110,6 +108,7 @@ infinite n = m , m>n , correct where
    x∣1 = ∣-∸ (PropEq.subst (_∣_ x) (+-comm 1 m) divs₂) divs₁
   ¬∣+1 (s≤s ()) divs₁ divs₂ | PropEq.refl
 
+ 
   correct : (∀ x → x ≤ n → IsPrime x → ¬ x ∣ m)
   correct x x≤pv px = ¬∣+1 (prime≥2 xprime) x∣megaprod where
 
