@@ -135,3 +135,21 @@ module WithTotalOrder (A : Set) (_<_ : A → A → Set) (order : IsStrictTotalOr
   ... | x , r-str₁ , r-str₂ = x ∷ ♯ subtract r-str₁ r-str₂ good
 
 
+
+substMinimum : ∀ {A : Set} → {P Q : A → Set} → {_<_ : A → A → Set}
+  → (∀ {p} → P p → Q p) 
+  → (∀ {q} → Q q → P q)
+  → Minimum P _<_
+  → Minimum Q _<_
+substMinimum to from (minimum value holds isMin) = minimum value (to holds) (λ qy → isMin (from qy))
+
+substExhaustiveStream : 
+  ∀ {A : Set}  {_<_ : A → A → Set} → {P Q : A → Set}
+  → (∀ {p} → P p → Q p) 
+  → (∀ {q} → Q q → P q)
+  → ∀ {b}
+  → SortedStream _<_ P b
+  → SortedStream _<_ Q b
+substExhaustiveStream {P = P} {Q = Q} to from {b} (headd ∷ taill) = substMinimum (λ { (p , o) → (to p , o) }) (λ { (p , o) → (from p , o) }) headd ∷ ♯ substExhaustiveStream to from (♭ taill)
+
+
