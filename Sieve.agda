@@ -1,5 +1,9 @@
 module Sieve where
 
+open import Function
+open import Function.Equivalence
+open import Induction.WellFounded
+
 open import Algebra
 open import Coinduction
 open import Data.Empty
@@ -28,3 +32,38 @@ abstract
  z' .{0} {zero} z≤n neqqq = ⊥-elim (neqqq PropEq.refl) 
  z' .{0} {suc n} z≤n neqqq = s≤s z≤n
  z' .{suc m} .{suc n} (s≤s {m} {n} m≤n) neqqq = s≤s (z' m≤n (λ x → neqqq (PropEq.cong suc x)))
+
+
+
+ isRetainedAfterSieve-step : ∀ { n } → (p : Minimum (IsPrime'> n) _<_) 
+   → ∀ { m }
+   → IsRetainedAfterSieve≤ n m
+   → let pv = Minimum.value p in
+     ¬ pv ∣ m
+   → IsRetainedAfterSieve≤ pv m
+ isRetainedAfterSieve-step {n} (minimum pv _ isMin) {m} (m>1 , no-divs) ¬div = m>1 , no' where
+   no' : (∀ x → x ≤ pv → IsPrime x → ¬ x ∣ m)
+   no' x x≤p isP x∣m with x ≟ pv
+   no' .pv x≤p isP x∣m | yes PropEq.refl = ¬div x∣m
+   ... | no neq = no-divs x x≤n isP x∣m where
+    x≤n : x ≤ n
+    x≤n with x ≤? n
+    x≤n | yes x≤n = x≤n
+    x≤n | no ¬x≤n = ⊥-elim (isMin {x} (prime⇒prime' isP , ≰⇒> ¬x≤n) (z' x≤p neq))
+
+ isRetainedAfterSieve-step-rev : ∀ { n } → (p : Minimum (IsPrime'> n) _<_) 
+   → ∀ { m }
+   → let pv = Minimum.value p in
+   IsRetainedAfterSieve≤ pv m
+   → IsRetainedAfterSieve≤ n m × ¬ pv ∣ m
+ isRetainedAfterSieve-step-rev {n} (minimum p (p-prime , n<p) isMin) {m} (m>1 , ret) = (m>1 , prevRet) , ¬div where
+
+   prevRet : ∀ x → x ≤ n → IsPrime x → ¬ x ∣ m
+   prevRet x x≤n = ret x (≤O.trans x≤n (≤O.trans (n≤m+n 1 n) n<p))
+
+   ¬div : ¬ p ∣ m
+   ¬div p∣m = ret p (≤O.reflexive PropEq.refl) (prime'⇒prime p-prime) p∣m
+
+wf : ∀ max → Well-founded (λ a b → a > b × a < max)
+wf = qqq where
+ 
