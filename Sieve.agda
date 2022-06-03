@@ -169,3 +169,40 @@ sieve-step {n} (headd ∷ taill) = p , substExhaustiveStream to from (subtract {
   infinite (just n) = infinite' n
 
 AllPrimes = SortedStream _<_ IsPrime' (just 0)
+
+abstract
+ sieve-step-abs : ∀ {n} → Sifted≤ n → Σ (Minimum (IsPrime'> n) _<_) (λ pmin → Sifted≤ (Minimum.value pmin))
+ sieve-step-abs = sieve-step
+
+
+go-primes : ∀ {n} → Sifted≤ n → SortedStream _<_ IsPrime' (just n)
+go-primes sifted with sieve-step-abs sifted
+go-primes sifted | prime , sifted' = prime ∷ (♯ go-primes sifted')
+
+seed : Sifted≤ 0
+seed = gono where
+
+  stupid : ∀ {n} x → x ≤ 0 → IsPrime x → ¬ x ∣ n
+  stupid .0 z≤n qq x1 = zero-nonprime qq
+  
+  go : ∀ n-1 → SortedStream _<_ (IsRetainedAfterSieve≤ 0) (just (suc n-1))
+  go n-1 = (minimum (suc (suc n-1)) good minimal) ∷ ♯ go (suc n-1) where
+
+    n = suc n-1
+    Good' = λ y → IsRetainedAfterSieve≤ 0 y × y > n
+
+    good : Good' (suc n)
+    good = (s≤s (s≤s z≤n) , stupid) , (≤O.reflexive PropEq.refl)
+ 
+    minimal : ∀ {y} → Good' y → ¬ y < suc n
+    minimal (proj₁ , n<y) (s≤s y<1+n) = <O.irrefl PropEq.refl (≤O.trans n<y  y<1+n)
+
+  gono : SortedStream _<_ (IsRetainedAfterSieve≤ 0) nothing
+  gono = (minimum 2 (((s≤s (s≤s z≤n)) , stupid) , Data.Unit.tt) minimal) ∷ ♯ go 1 where
+   Good' = λ y → IsRetainedAfterSieve≤ 0 y × ⊤
+
+   minimal : ∀ {y} → Good' y → ¬ y < 2
+   minimal ((s≤s (s≤s m≤n) , proj₂) , proj₂') (s≤s (s≤s ()))
+
+all-primes : SortedStream _<_ IsPrime' (just 0)
+all-primes = go-primes seed
