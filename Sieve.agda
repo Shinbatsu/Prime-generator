@@ -1,9 +1,5 @@
 module Sieve where
 
-open import Function
-open import Function.Equivalence
-open import Induction.WellFounded
-
 open import Algebra
 open import Coinduction
 open import Data.Empty
@@ -15,6 +11,21 @@ open import Data.Nat.Properties
 open import Data.Product
 open import Data.Sum
 open import Data.Unit using (⊤)
+
+open import Function
+open import Function.Equivalence
+open import Induction.WellFounded
+
+open import Relation.Binary hiding (Minimum)
+open import Relation.Nullary
+open import Relation.Unary using (Pred)
+open import SortedStream
+
+import Level
+import MRel
+import PrimesInfinite
+open import Multiples
+open import Factorisation
 
 open import Relation.Binary.StrictTotalOrder Data.Nat.Properties.strictTotalOrder
 open StrictTotalOrder Data.Nat.Properties.strictTotalOrder
