@@ -66,4 +66,35 @@ abstract
 
 wf : ∀ max → Well-founded (λ a b → a > b × a < max)
 wf = qqq where
- 
+
+
+ data _≤''_ : ℕ → ℕ → Set where
+  ≤''-refl : ∀ {m} →                         m ≤'' m
+  ≤''-step : ∀ {m n} (m≤′n : m ≤'' n) → pred m ≤'' n
+
+ <'⇒≤′ : ∀ a b → a <′ b → a ≤′ b
+ <'⇒≤′ a .(suc a) ≤′-refl = ≤′-step ≤′-refl
+ <'⇒≤′ a .(suc n) (≤′-step {n} m≤′n) = ≤′-step (<'⇒≤′ a n m≤′n)
+
+ s' : ∀ a b → a ≤'' b → a ≤'' suc b
+ s' .b b ≤''-refl = ≤''-step ≤''-refl
+ s' .0 b (≤''-step {zero} m≤′n) = s' zero b m≤′n
+ s' .n b (≤''-step {suc n} m≤′n) = ≤''-step (s' (suc n) b m≤′n)
+
+ ≤''→≤′ : ∀ a b → a ≤'' b → a ≤′ b
+ ≤''→≤′ .b b ≤''-refl = ≤′-refl
+ ≤''→≤′ .0 b (≤''-step {zero} m≤′n) = ≤''→≤′ zero b m≤′n
+ ≤''→≤′ .n b (≤''-step {suc n} m≤′n) with ≤''→≤′ (suc n) b m≤′n
+ ... | rec = <'⇒≤′ n b rec
+
+ ≤′→≤'' : ∀ a b → a ≤′ b → a ≤'' b
+ ≤′→≤'' .b b ≤′-refl = ≤''-refl
+ ≤′→≤'' a .(suc n) (≤′-step {n} m≤′n) with ≤′→≤'' a n m≤′n
+ ... | rec = s' a n rec
+
+ lemm : ∀ a b → a > pred b → a ≢ b → a > b
+ lemm a zero gt neq = gt
+ lemm a (suc n) gt neq with compare a (suc n)
+ lemm a (suc n) gt neq | tri< a' ¬b ¬c = ⊥-elim (irrefl PropEq.refl (Relation.Binary.DecTotalOrder.trans Data.Nat.Properties.≤-decTotalOrder a' gt))
+ lemm a (suc n) gt neq | tri≈ ¬a b ¬c = ⊥-elim (neq b)
+ lemm a (suc n) gt neq | tri> ¬a ¬b c = c
