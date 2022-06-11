@@ -51,3 +51,47 @@ A `SortedStream` is a **coinductive structure** that:
 - Has a head (`headd`) which is the minimal next element.
 - Lazily produces the tail (`taill`) of the stream.
 - Maintains a lower bound `b` to ensure elements are generated in sorted order.
+
+---
+
+### Aux Definitions
+
+- `None P < lb ub`  
+Proof that no element between `lb` and `ub` satisfies `P`.
+
+- `Good P < bnd x`  
+Proof that `x` satisfies `P` and is above the bound `bnd`.
+
+- `Bounded->`  
+Defines a relation for well-founded recursion within bounds.
+
+---
+
+## WithTotalOrder Module
+
+The `WithTotalOrder` module provides utilities to work under a **strict total order** with well-foundedness:
+
+- `extend-isMinimal`  
+Extends a minimality proof when the lower bound changes.
+
+- `m>-wf`  
+Proves well-foundedness of the bounded relation.
+
+- `subtract-step`  
+A recursive step for subtracting one sorted stream from another (used for operations like "filtering out multiples" in prime generation).
+
+- `subtract`  
+High-level stream subtraction based on `subtract-step`.
+
+These tools allow building infinite sorted streams of primes by starting from natural numbers and recursively filtering out composites.
+
+---
+
+## Prime Generation Methods
+
+The prime generation is built upon:
+
+- **Base stream**: Start with an infinite sorted stream of natural numbers greater than `1`.
+- **Prime extraction**: The minimal element of the stream is taken as the next prime.
+- **Stream subtraction**: Multiples of the prime are removed using `subtract`.
+- **Recursive definition**: Coinductive construction continues infinitely to yield the complete prime stream.
